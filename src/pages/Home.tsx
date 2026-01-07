@@ -31,7 +31,7 @@ function Box(props: any) {
 const Home = () => {
   return (
     <div className="w-full h-screen bg-slate-950">
-      <div className="absolute top-10 left-10 z-10 text-white pointer-events-none">
+      <div className="absolute top-00 left-10 z-10 text-white pointer-events-none">
         <h1 className="text-4xl font-bold mb-2">Three.js Practice</h1>
         <p className="text-slate-400">Click the cube to scale it, hover to change color.</p>
         <p className="text-sm text-slate-500 mt-4">Drag to rotate • Scroll to zoom</p>
@@ -49,9 +49,9 @@ const Home = () => {
         <Box position={[0, 0, 0]} />
         <Box position={[0, 0, 0]} />
         
-        <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
+        <Stars radius={100} depth={50} count={50000} factor={4} saturation={0} fade speed={1} />
         
-        <gridHelper args={[20, 20, 0x444444, 0x222222]} position={[0, -2, 0]} />
+        {/* <gridHelper args={[20, 20, 0x444444, 0x222222]} position={[0, -2, 0]} /> */}
       </Canvas>
     </div>
   );
