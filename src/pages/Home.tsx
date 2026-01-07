@@ -178,7 +178,7 @@ const Home = () => {
           
           <Suspense fallback={null}>
             <Environment preset="night" />
-            <Stars radius={300} depth={100} count={5000} factor={6} saturation={0.5} fade speed={1} />
+            <Stars radius={300} depth={100} count={5000} factor={20} saturation={1} fade speed={1} />
           </Suspense>
           
           <ScrollControls pages={8} damping={0.1}>
