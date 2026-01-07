@@ -41,10 +41,12 @@ const Home = () => {
         <PerspectiveCamera makeDefault position={[0, 0, 5]} />
         <OrbitControls enableDamping />
         
-        <ambientLight intensity={0.5} />
+        <ambientLight intensity={1} />
         <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={1000} castShadow />
         <pointLight position={[-10, -10, -10]} intensity={500} />
         
+        <Box position={[0, 0, 0]} />
+        <Box position={[0, 0, 0]} />
         <Box position={[0, 0, 0]} />
         
         <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
