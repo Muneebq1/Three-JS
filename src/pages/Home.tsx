@@ -5,6 +5,7 @@ import {
   Stars,
   Environment,
   useTexture,
+  OrbitControls,
 } from "@react-three/drei"
 import { Canvas, useFrame } from "@react-three/fiber"
 import { Suspense, useMemo, useRef } from "react"
@@ -166,7 +167,7 @@ function Planet({ planet }: { planet: any }) {
   const orbitRef = useRef<THREE.Group>(null!)
 
   useFrame((_, delta) => {
-    orbitRef.current.rotation.y += delta * (1 / planet.distance)
+    orbitRef.current.rotation.y += delta * (2 / planet.distance)
   })
 
   return (
@@ -237,6 +238,7 @@ export default function Home() {
       <Canvas camera={{ fov: 30, position: [0, 0, 20], far: 2000 }}>
         {/* LIGHTS */}
         <ambientLight intensity={0.15} />
+        <OrbitControls/>
         <pointLight position={[0, 0, 0]} intensity={3} decay={2} />
         <directionalLight position={[10, 5, 20]} intensity={0.6} />
 
@@ -254,7 +256,7 @@ export default function Home() {
           <SolarSystem />
 
           {/* INFO CARDS */}
-          <Scroll html>
+          {/* <Scroll html>
             <div className="w-screen">
               {PLANETS.map((planet) => (
                 <section
@@ -285,7 +287,7 @@ export default function Home() {
                 </section>
               ))}
             </div>
-          </Scroll>
+          </Scroll> */}
         </ScrollControls>
       </Canvas>
     </div>
