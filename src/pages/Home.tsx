@@ -9,16 +9,18 @@ import {
 import { Canvas, useFrame } from "@react-three/fiber"
 import { Suspense, useMemo, useRef } from "react"
 import * as THREE from "three"
-import sun from '@/assets/2k_sun.jpg'
-import mercury from '@/assets/2k_mercury.jpg'
-import venus from '@/assets/2k_venus_surface.jpg'
-import earth from '@/assets/2k_earth_daymap.jpg'
-import earthClouds from '@/assets/2k_earth_clouds.jpg'
-import mars from '@/assets/2k_mars.jpg'
-import jupiter from '@/assets/2k_jupiter.jpg'
-import saturn from '@/assets/2k_saturn.jpg'
-import saturnRings from '@/assets/2k_saturn_ring_alpha.png'
+import { EffectComposer, Bloom } from "@react-three/postprocessing"
 
+// 🌍 TEXTURES
+import sun from "@/assets/2k_sun.jpg"
+import mercury from "@/assets/2k_mercury.jpg"
+import venus from "@/assets/2k_venus_surface.jpg"
+import earth from "@/assets/2k_earth_daymap.jpg"
+import earthClouds from "@/assets/2k_earth_clouds.jpg"
+import mars from "@/assets/2k_mars.jpg"
+import jupiter from "@/assets/2k_jupiter.jpg"
+import saturn from "@/assets/2k_saturn.jpg"
+import saturnRings from "@/assets/2k_saturn_ring_alpha.png"
 
 /* =======================
    PLANET DATA
@@ -31,14 +33,14 @@ const PLANETS = [
     distance: 0,
     tilt: 0,
     texture: sun,
-    description: "The star at the center of our solar system.",
+    description: "The massive star at the heart of our solar system.",
   },
   {
     name: "Mercury",
     size: 0.6,
     distance: 12,
     tilt: 0.03,
-    texture:  mercury,
+    texture: mercury,
     description: "The smallest planet, closest to the Sun.",
   },
   {
@@ -54,8 +56,8 @@ const PLANETS = [
     size: 1.2,
     distance: 28,
     tilt: 23.5,
-    texture:  earth,
-    description: "Our home planet full of life.",
+    texture: earth,
+    description: "Our home planet, the only known world with life.",
   },
   {
     name: "Mars",
@@ -63,7 +65,7 @@ const PLANETS = [
     distance: 36,
     tilt: 25,
     texture: mars,
-    description: "The red planet with ancient rivers.",
+    description: "The red planet with ancient riverbeds.",
   },
   {
     name: "Jupiter",
@@ -71,7 +73,7 @@ const PLANETS = [
     distance: 50,
     tilt: 3,
     texture: jupiter,
-    description: "The largest gas giant.",
+    description: "The largest planet with a giant storm system.",
   },
   {
     name: "Saturn",
@@ -79,7 +81,7 @@ const PLANETS = [
     distance: 65,
     tilt: 26.7,
     texture: saturn,
-    description: "Famous for its beautiful rings.",
+    description: "Famous for its spectacular ring system.",
   },
 ]
 
@@ -157,31 +159,40 @@ function PlanetMesh({ planet }: { planet: any }) {
 }
 
 /* =======================
-   PLANET
+   PLANET (WITH ORBIT)
 ======================= */
 
 function Planet({ planet }: { planet: any }) {
-  return (
-    <group position={[planet.distance, 0, 0]}>
-      <PlanetMesh planet={planet} />
+  const orbitRef = useRef<THREE.Group>(null!)
 
-      {/* Saturn Rings */}
-      {planet.name === "Saturn" && (
-        <mesh rotation={[Math.PI / 2, 0, 0]}>
-          <ringGeometry args={[planet.size * 1.4, planet.size * 2.2, 128]} />
-          <meshStandardMaterial
-            map={useTexture(saturnRings)}
-            transparent
-            side={THREE.DoubleSide}
-          />
-        </mesh>
-      )}
+  useFrame((_, delta) => {
+    orbitRef.current.rotation.y += delta * (1 / planet.distance)
+  })
+
+  return (
+    <group ref={orbitRef}>
+      <group position={[planet.distance, 0, 0]}>
+        <PlanetMesh planet={planet} />
+
+        {planet.name === "Saturn" && (
+          <mesh rotation={[Math.PI / 2, 0, 0]}>
+            <ringGeometry
+              args={[planet.size * 1.4, planet.size * 2.2, 128]}
+            />
+            <meshStandardMaterial
+              map={useTexture(saturnRings)}
+              transparent
+              side={THREE.DoubleSide}
+            />
+          </mesh>
+        )}
+      </group>
     </group>
   )
 }
 
 /* =======================
-   SOLAR SYSTEM
+   SOLAR SYSTEM + CAMERA
 ======================= */
 
 function SolarSystem() {
@@ -194,6 +205,12 @@ function SolarSystem() {
     state.camera.position.x = THREE.MathUtils.lerp(
       state.camera.position.x,
       targetX,
+      0.035
+    )
+
+    state.camera.position.z = THREE.MathUtils.lerp(
+      state.camera.position.z,
+      22,
       0.05
     )
 
@@ -216,17 +233,17 @@ function SolarSystem() {
 
 export default function Home() {
   return (
-    <div className="w-full h-screen bg-black">
+    <div className="w-full h-screen bg-black text-white">
       <Canvas camera={{ fov: 30, position: [0, 0, 20], far: 2000 }}>
+        {/* LIGHTS */}
         <ambientLight intensity={0.15} />
-
-        <pointLight
-          position={[0, 0, 0]}
-          intensity={3}
-          decay={2}
-        />
-
+        <pointLight position={[0, 0, 0]} intensity={3} decay={2} />
         <directionalLight position={[10, 5, 20]} intensity={0.6} />
+
+        {/* POST PROCESS */}
+        <EffectComposer>
+          <Bloom intensity={1.4} luminanceThreshold={0} />
+        </EffectComposer>
 
         <Suspense fallback={null}>
           <Environment preset="night" />
@@ -235,6 +252,40 @@ export default function Home() {
 
         <ScrollControls pages={7} damping={0.1}>
           <SolarSystem />
+
+          {/* INFO CARDS */}
+          <Scroll html>
+            <div className="w-screen">
+              {PLANETS.map((planet) => (
+                <section
+                  key={planet.name}
+                  className="h-screen flex items-center px-20 pointer-events-none"
+                >
+                  <div className="max-w-xl bg-black/60 backdrop-blur-xl border border-white/10 rounded-3xl p-10 pointer-events-auto">
+                    <h1 className="text-6xl font-black uppercase mb-4">
+                      {planet.name}
+                    </h1>
+
+                    <p className="text-lg text-slate-300 mb-6">
+                      {planet.description}
+                    </p>
+
+                    <div className="grid grid-cols-2 gap-4 text-sm text-slate-400">
+                      <div>Axial Tilt</div>
+                      <div>{planet.tilt}°</div>
+
+                      <div>Orbit Distance</div>
+                      <div>{planet.distance} AU</div>
+                    </div>
+
+                    <button className="mt-8 px-8 py-3 rounded-full bg-white text-black font-bold uppercase tracking-widest text-xs hover:bg-blue-600 hover:text-white transition">
+                      Explore Planet
+                    </button>
+                  </div>
+                </section>
+              ))}
+            </div>
+          </Scroll>
         </ScrollControls>
       </Canvas>
     </div>
